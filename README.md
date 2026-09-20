@@ -61,9 +61,14 @@ vp run build
 vp run preview
 ```
 
-The build runs `astro check`, then creates static pages in `dist/`.
-Publish the contents of `dist/` to a static host. Rebuild after content changes.
+The build runs `astro check`, then creates static pages in `docs/`.
+Rebuild after source or content changes. Commit the generated `docs/` files
+with those changes so GitHub Pages can publish them.
 The site uses root-relative URLs for a root-domain site.
+
+In the repository settings, open **Pages** and select **Deploy from a branch**.
+Select the branch that contains the built files and `/docs` as the folder.
+The build copies `public/.nojekyll` to `docs/.nojekyll` to disable Jekyll.
 
 See the [Astro MDX documentation](https://docs.astro.build/en/guides/integrations-guide/mdx/)
 for MDX syntax and component imports.

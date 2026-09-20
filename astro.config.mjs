@@ -3,6 +3,7 @@ import mdx from "@astrojs/mdx";
 
 export default defineConfig({
   output: "static",
+  outDir: "./docs",
   trailingSlash: "always",
   integrations: [mdx()],
   markdown: { shikiConfig: { theme: "github-dark-dimmed" } },
