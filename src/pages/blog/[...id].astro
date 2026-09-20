@@ -1,0 +1,32 @@
+---
+import { getCollection, render } from "astro:content";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import BlogLayout from "../../layouts/BlogLayout.astro";
+
+export const getStaticPaths = (async () => {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<BlogLayout
+  title={post.data.title}
+  description={post.data.description}
+  contents={headings.filter((heading) => heading.depth > 1).map((heading) => ({
+    text: heading.text,
+    href: `#${heading.slug}`,
+    depth: heading.depth,
+  }))}
+>
+  <header>
+    <p><a href="/blog/">← All posts</a></p>
+    <h1><a href="#intro">{post.data.title}</a></h1>
+    <p class="metadata"><time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time></p>
+    <p>{post.data.description}</p>
+  </header>
+  <div class="prose"><Content /></div>
+</BlogLayout>

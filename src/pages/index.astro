@@ -1,0 +1,103 @@
+---
+import { getCollection } from "astro:content";
+import BlogLayout from "../layouts/BlogLayout.astro";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id),
+).slice(0, 3);
+---
+
+<BlogLayout
+  title="Nguyễn Nhật Nguyên"
+  description="Backend software engineer in Ho Chi Minh City. I build banking and financial products with Java and Go."
+  contents={[
+    { text: "Experience", href: "#experience" },
+    { text: "Skills", href: "#skills" },
+    { text: "Education", href: "#education" },
+    { text: "Writing", href: "#writing" },
+    { text: "Projects", href: "#projects" },
+  ]}
+>
+  <header class="portfolio-intro">
+    <h1><a href="/">Nguyễn Nhật Nguyên</a></h1>
+    <p class="role">Backend Software Engineer</p>
+    <p class="metadata">Ho Chi Minh City, Vietnam</p>
+    <p>I build backend systems for products, using mostly Java and Go. My work spans requirements, backend services, and delivery, with a focus on clear business rules and reliable systems.</p>
+    <nav class="profile-links" aria-label="Profile links">
+      <a href="mailto:mountngubinh@gmail.com">Email me</a>
+      <a href="https://www.linkedin.com/in/n-g-u-y-e-n/">LinkedIn ↗</a>
+      <a href="https://github.com/n-g-u-y-e-n">GitHub ↗</a>
+      <a href="/blog/">Blog →</a>
+    </nav>
+  </header>
+
+  <section class="section" id="experience">
+    <h2>Experience</h2>
+    <article>
+      <h3>Software Developer @ GEEK Up</h3>
+      <p class="metadata">June 2024 – Present</p>
+      <p>Building banking, merchant growth, and financial data services. I work with product and bank integration teams to clarify requirements and carry them through to delivery.</p>
+      <p>Highlights include onboarding services with P99 latency below one second at 1,000 concurrent users, and APIs for querying over 40 million financial records.</p>
+    </article>
+  </section>
+
+  <section slot="projects" class="projects-section" id="projects" aria-labelledby="projects-title">
+    <h2 id="projects-title">Projects</h2>
+    <div class="projects-grid">
+      <article class="project-block">
+        <h3>Piton</h3>
+        <p>A lightweight, open-source workflow engine in Go for long-running, resilient applications.</p>
+      </article>
+      <article class="project-block">
+        <h3><a href="https://github.com/DeluxeOwl/chronicle">Chronicle ↗</a></h3>
+        <p>Open-source contribution to a type-safe event sourcing framework for Go.</p>
+      </article>
+      {Array.from({ length: 7 }, () => <div class="project-block project-empty" aria-hidden="true"></div>)}
+    </div>
+  </section>
+
+  <section class="section" id="skills">
+    <h2>Skills</h2>
+    <table class="skills" aria-label="Skills by area">
+      <thead>
+        <tr><th scope="col">Area</th><th scope="col">Skills</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Backend &amp; data</th>
+          <td>Java, Go, Spring Boot, REST/gRPC, PostgreSQL, MySQL, Redis, RabbitMQ</td>
+        </tr>
+        <tr>
+          <th scope="row">Cloud &amp; workflows</th>
+          <td>AWS Lambda, Step Functions, Kubernetes, OpenShift, ArgoCD, Camunda</td>
+        </tr>
+        <tr>
+          <th scope="row">Product &amp; delivery</th>
+          <td>Requirements analysis, process modeling, MVP scoping, integration planning, intern coaching</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section" id="education">
+    <h2>Education</h2>
+    <article>
+      <h3>HCMC University of Technology</h3>
+      <p class="metadata">Bachelor of Computer Science · 2020–2024</p>
+      <p>Vietnamese (native) · English (IELTS 7.5)</p>
+    </article>
+  </section>
+
+  <section class="section" id="writing">
+    <h2>Writing</h2>
+    {posts.length === 0 && <p>No posts yet.</p>}
+    {posts.map((post) => (
+      <article>
+        <h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
+        <p class="metadata"><time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time></p>
+        <p>{post.data.description}</p>
+      </article>
+    ))}
+    <p><a href="/blog/">All posts →</a></p>
+  </section>
+</BlogLayout>

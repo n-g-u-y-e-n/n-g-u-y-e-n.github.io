@@ -1,0 +1,53 @@
+---
+import "../style.css";
+
+interface Props {
+  title: string;
+  description: string;
+  contents: { text: string; href: string; depth?: number }[];
+}
+
+const { title, description, contents } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1c1d1b" />
+    <meta name="description" content={description} />
+    <title>{title === "Nguyễn Nhật Nguyên" ? title : `${title} · Nguyễn Nhật Nguyên`}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#intro">Skip to content</a>
+    <main id="intro">
+    <div class="site-shell">
+      <div class="main-content">
+        <slot />
+      </div>
+      <aside>
+        <nav class="contents" aria-labelledby="contents-title">
+          <h2 id="contents-title">Table of Contents</h2>
+          <ul>
+            <li><a href="#intro">Intro</a></li>
+            {contents.map((item) => (
+              <li style={`margin-left: ${Math.max(0, (item.depth ?? 2) - 2)}em`}>
+                <a href={item.href}>{item.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+    </div>
+    <slot name="projects" />
+    </main>
+    <footer class="site-footer">
+      <nav aria-label="Footer navigation">
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="#intro">Back to top ↑</a>
+      </nav>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+---
+title: "Hello, world"
+description: "A first entry, and a quick guide to writing here."
+date: 2026-09-20
+---
+
+This is a small place for notes, ideas, and things learned along the way.
+
+## Writing a new entry
+
+Each post is an MDX file in the `blog/` directory. Create `blog/my-post.mdx`
+with a title, description, and date:
+
+```mdx
+---
+title: "My new post"
+description: "A short introduction to the post."
+date: 2026-09-20
+---
+
+Write your post here.
+
+## A section heading
+
+Add text, links, lists, and code examples.
+```
+
+The file becomes `/blog/my-post/`. The blog page lists published posts with
+the newest entry first. Section headings appear in the table of contents.
+
+### Organizing posts
+
+You can use folders. For example, `blog/notes/first-note.mdx` becomes
+`/blog/notes/first-note/`.
+
+## Using MDX
+
+MDX supports Markdown and JSX. You can use expressions inside your text:
+**two plus two is {2 + 2}**.
+
+<aside className="note">This note is written with JSX inside the MDX file.</aside>
+
+## Keeping a draft
+
+Add `draft: true` to the frontmatter to leave a post out of the site.
+Remove it or set it to `false` when the post is ready.
+
+## Building the site
+
+Run `vp run dev` to write and preview locally. Run `vp run build` to create
+the static site in `dist/`. Rebuild the site after you add or edit a post.
