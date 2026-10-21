@@ -1,0 +1,46 @@
+---
+import { getCollection } from "astro:content";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import BlogLayout from "../../layouts/BlogLayout.astro";
+
+export const getStaticPaths = (async () => {
+  const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id),
+  );
+  const categories = [...new Set(posts.flatMap((post) => post.data.categories))];
+  return categories.map((category) => ({
+    params: { category },
+    props: { category, posts: posts.filter((post) => post.data.categories.includes(category)) },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { category, posts } = Astro.props;
+---
+
+<BlogLayout
+  title={category}
+  description={`Posts in ${category}.`}
+  contents={[{ text: "Posts", href: "#posts" }]}
+>
+  <header>
+    <p class="back-link"><a href="/blog/">← All posts</a></p>
+    <h1>{category}</h1>
+    <p class="metadata">{posts.length} {posts.length === 1 ? "post" : "posts"}</p>
+  </header>
+  <section id="posts" class="section post-list">
+    <h2>Posts</h2>
+    {posts.map((post) => (
+      <article>
+        <h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
+        <p class="metadata"><time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time></p>
+        <p>{post.data.description}</p>
+        {post.data.tags.length > 0 && (
+          <ul class="post-tags" aria-label={`Tags for ${post.data.title}`}>
+            {post.data.tags.map((tag) => <li><a href={`/tags/${tag}/`}>#{tag}</a></li>)}
+          </ul>
+        )}
+      </article>
+    ))}
+  </section>
+</BlogLayout>

@@ -22,11 +22,20 @@ const { Content, headings } = await render(post);
     depth: heading.depth,
   }))}
 >
-  <header>
-    <p><a href="/blog/">← All posts</a></p>
+  <header class="post-header">
+    <p class="back-link"><a href="/blog/">← All posts</a></p>
     <h1><a href="#intro">{post.data.title}</a></h1>
-    <p class="metadata"><time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time></p>
-    <p>{post.data.description}</p>
+    <div class="post-meta">
+    {post.data.categories.length > 0 && (
+      <p class="metadata">Filed under {post.data.categories.map((category, index) => <>{index > 0 && ", "}<a href={`/categories/${category}/`}>{category}</a></>)}</p>
+    )}
+    {post.data.tags.length > 0 && (
+      <ul class="post-tags" aria-label="Post tags">
+        {post.data.tags.map((tag) => <li><a href={`/tags/${tag}/`}>#{tag}</a></li>)}
+      </ul>
+    )}
+    </div>
+    <p class="post-description">{post.data.description}</p>
   </header>
   <div class="prose"><Content /></div>
 </BlogLayout>

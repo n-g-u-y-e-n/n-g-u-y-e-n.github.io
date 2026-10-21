@@ -88,7 +88,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
     </article>
   </section>
 
-  <section class="section" id="writing">
+  <section class="section post-list" id="writing">
     <h2>Writing</h2>
     {posts.length === 0 && <p>No posts yet.</p>}
     {posts.map((post) => (

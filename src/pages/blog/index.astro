@@ -16,11 +16,11 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   ]}
 >
   <header>
-    <p><a href="/">← Home</a></p>
+    <p class="back-link"><a href="/">← Home</a></p>
     <h1><a href="/blog/">Blog</a></h1>
     <p>Notes, ideas, and things I learn along the way.</p>
   </header>
-  <section class="section" id="posts">
+  <section class="section post-list" id="posts">
     <h2>Latest posts</h2>
     {posts.length === 0 && <p>No posts yet.</p>}
     {posts.map((post) => (
@@ -28,6 +28,11 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
         <h3><a href={`/blog/${post.id}/`}>{post.data.title}</a></h3>
         <p class="metadata"><time datetime={post.data.date.toISOString()}>{post.data.date.toISOString().slice(0, 10)}</time></p>
         <p>{post.data.description}</p>
+        {post.data.tags.length > 0 && (
+          <ul class="post-tags" aria-label={`Tags for ${post.data.title}`}>
+            {post.data.tags.map((tag) => <li><a href={`/tags/${tag}/`}>#{tag}</a></li>)}
+          </ul>
+        )}
       </article>
     ))}
   </section>

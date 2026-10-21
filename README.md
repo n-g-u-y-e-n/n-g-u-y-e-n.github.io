@@ -2,7 +2,7 @@
 
 The site uses Astro to build HTML pages. No application server is needed.
 The home page is a portfolio. The post list is at `/blog/`.
-The dark layout and table of contents are shared by all pages.
+All pages use a dark layout, blue headings, Arial text, and a compact sidebar.
 
 ## Local commands
 
@@ -27,6 +27,8 @@ Create `blog/my-post.mdx`:
 title: "My new post"
 description: "A short description."
 date: 2026-09-20
+tags: [astro, writing]
+categories: [guides]
 ---
 
 Write your post here.
@@ -45,6 +47,17 @@ three most recent posts. Add `draft: true`
 to exclude a post from both the list and the generated pages.
 The required fields are `title`, `description`, and `date`. Invalid fields
 stop the build. Use `##` and deeper headings for the table of contents.
+
+Tags are optional. Add a list such as `tags: [java, spring-boot]` to the frontmatter.
+Use letters, numbers, and single hyphens. Tags are trimmed, changed to lowercase,
+and deduplicated. Each tag links to `/tags/<tag>/`, with matching posts in date order.
+The sidebar lists tags and post counts. Draft posts do not appear in tag pages or counts.
+
+Categories are separate from tags. Add an optional list such as `categories: [guides]`.
+Category names follow the same rules as tags. Each category links to
+`/categories/<category>/`, with matching posts in date order.
+Blog, tag, and category pages show the five most recent posts and category counts
+in the right sidebar. Drafts are excluded from both lists and category pages.
 
 MDX files can import `.astro` components and use them in the post.
 Put static images in `public/` and link to them with `/image-name.png`.

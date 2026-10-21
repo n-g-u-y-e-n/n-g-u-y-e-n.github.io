@@ -1,0 +1,104 @@
+---
+// Left-gutter table of contents with scrollspy and a proximity effect,
+// adapted from the crd-ui website (MIT), which took it from NumberFlow's TOC
+// and React Bits' LineSidebar.
+interface Props {
+  items: { text: string; href: string; depth?: number }[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav class="toc" id="toc" aria-label="On this page">
+  <ol>
+    {items.map((item) => (
+      <li data-depth={item.depth ?? 2}><a href={item.href}>{item.text}</a></li>
+    ))}
+  </ol>
+</nav>
+
+<script>
+  const links = [...document.querySelectorAll<HTMLAnchorElement>("#toc a")];
+  const sections = links.map((a) => {
+    const href = a.getAttribute("href") ?? "";
+    return href.startsWith("#") ? document.getElementById(href.slice(1)) : null;
+  });
+  let scrollPt = 0;
+
+  function measureScrollPt() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue("scroll-padding-top")
+      .match(/[\d.]+/)?.[0];
+    scrollPt = raw ? parseFloat(raw) : 0;
+  }
+
+  // The active item is the last heading above a reading line about 20% down
+  // the viewport.
+  function update() {
+    const threshold = scrollPt + window.innerHeight * 0.2;
+    let active = 0;
+    sections.forEach((el, i) => {
+      if (el && el.getBoundingClientRect().top <= threshold) active = i;
+    });
+    links.forEach((a, i) => {
+      if (i === active) a.setAttribute("data-active", "");
+      else a.removeAttribute("data-active");
+    });
+    startLoop();
+  }
+
+  // One rAF loop eases each item's --effect toward its target. The active
+  // item holds --effect at 1.
+  const list = document.querySelector<HTMLElement>("#toc ol");
+  const items = links.map((a) => a.parentElement as HTMLElement);
+  const targets = new Array<number>(items.length).fill(0);
+  const current = new Array<number>(items.length).fill(0);
+  const RADIUS = 80;
+  const TAU = 0.1;
+  let raf: number | null = null;
+  let last = 0;
+
+  const smoothstep = (p: number) => p * p * (3 - 2 * p);
+
+  function frame(now: number) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    const k = 1 - Math.exp(-dt / TAU);
+    let moving = false;
+    items.forEach((li, i) => {
+      const target = Math.max(targets[i], links[i].hasAttribute("data-active") ? 1 : 0);
+      let next = current[i] + (target - current[i]) * k;
+      if (Math.abs(target - next) < 0.0015) next = target;
+      else moving = true;
+      current[i] = next;
+      li.style.setProperty("--effect", next.toFixed(4));
+    });
+    raf = moving ? requestAnimationFrame(frame) : null;
+  }
+
+  function startLoop() {
+    if (raf != null) return;
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  list?.addEventListener("pointermove", (e) => {
+    const rect = list.getBoundingClientRect();
+    const y = e.clientY - rect.top + list.scrollTop;
+    items.forEach((li, i) => {
+      const center = li.offsetTop + li.offsetHeight / 2;
+      targets[i] = smoothstep(Math.max(0, 1 - Math.abs(y - center) / RADIUS));
+    });
+    startLoop();
+  });
+
+  list?.addEventListener("pointerleave", () => {
+    targets.fill(0);
+    startLoop();
+  });
+
+  window.addEventListener("resize", measureScrollPt);
+  window.addEventListener("scroll", update, { passive: true });
+  measureScrollPt();
+  update();
+</script>

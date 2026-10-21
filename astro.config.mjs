@@ -6,6 +6,6 @@ export default defineConfig({
   outDir: "./docs",
   trailingSlash: "always",
   integrations: [mdx()],
-  markdown: { shikiConfig: { theme: "github-dark-dimmed" } },
+  markdown: { shikiConfig: { themes: { light: "github-light", dark: "github-dark" } } },
   server: { host: "127.0.0.1", port: 5173 },
 });
