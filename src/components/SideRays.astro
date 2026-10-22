@@ -87,7 +87,16 @@ void main() {
   color.rgb = mix(vec3(gray), color.rgb, iSaturation);
 
   color.a = max(color.r, max(color.g, color.b)) * iOpacity;
-  gl_FragColor = color;
+
+  // Fade out toward the bottom, in the shader instead of a CSS mask-image:
+  // WebKit (all iPhone browsers and webviews) can drop a masked WebGL layer.
+  // Same stops as the crd-ui mask: opaque to 50% of the height, clear at 92%.
+  float fromTop = 1.0 - gl_FragCoord.y / iResolution.y;
+  color.a = clamp(color.a, 0.0, 1.0) * clamp((0.92 - fromTop) / 0.42, 0.0, 1.0);
+
+  // Premultiplied output for the default canvas compositing. It looks the
+  // same as the original non-premultiplied output.
+  gl_FragColor = vec4(clamp(color.rgb, 0.0, 1.0) * color.a, color.a);
 }`;
 
   function compile(gl: WebGLRenderingContext, type: number, source: string) {
@@ -97,13 +106,14 @@ void main() {
     return shader;
   }
 
-  function start(container: HTMLElement) {
+  function start(container: HTMLElement, onLost: () => void) {
     const canvas = document.createElement("canvas");
     canvas.style.width = "100%";
     canvas.style.height = "100%";
     canvas.style.display = "block";
-    // Same context options as ogl's Renderer defaults.
-    const gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: false, antialias: false });
+    const options = { alpha: true, antialias: false };
+    const gl = (canvas.getContext("webgl", options) ??
+      canvas.getContext("experimental-webgl", options)) as WebGLRenderingContext | null;
     if (!gl) return null;
     container.appendChild(canvas);
 
@@ -154,39 +164,72 @@ void main() {
     resize();
 
     let raf: number | null = null;
-    const frame = (t: number) => {
+    const draw = (t: number) => {
       gl.uniform1f(iTime, t * 0.001);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
+    };
+    const frame = (t: number) => {
+      draw(t);
       raf = requestAnimationFrame(frame);
     };
+    const pause = () => {
+      if (raf != null) cancelAnimationFrame(raf);
+      raf = null;
+    };
+
+    // iOS drops WebGL contexts, for example when the app goes to the
+    // background. Remove this canvas and let the caller make a new one.
+    canvas.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      pause();
+      window.removeEventListener("resize", resize);
+      canvas.remove();
+      onLost();
+    });
 
     return {
       play() {
         if (raf == null) raf = requestAnimationFrame(frame);
       },
-      pause() {
-        if (raf != null) cancelAnimationFrame(raf);
-        raf = null;
+      // One frame, for visitors who turn on reduce motion.
+      still() {
+        draw(10000);
       },
+      pause,
     };
   }
 
   const container = document.getElementById("hero-rays");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (container && !reduceMotion) {
-    let rays: ReturnType<typeof start> | undefined;
-    // WebGL starts when the rays first come into view. Off-screen, the loop
-    // pauses.
+  if (container) {
+    let rays: ReturnType<typeof start> = null;
+    let visible = false;
+
+    const show = () => {
+      if (!rays) {
+        rays = start(container, () => {
+          rays = null;
+          if (visible && !document.hidden) setTimeout(show, 100);
+        });
+      }
+      if (reduceMotion) rays?.still();
+      else rays?.play();
+    };
+
+    // WebGL starts when the rays first come into view. Off-screen, or while
+    // the page is hidden, the loop pauses.
     new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          rays ??= start(container);
-          rays?.play();
-        } else {
-          rays?.pause();
-        }
+        visible = entries[0].isIntersecting;
+        if (visible) show();
+        else rays?.pause();
       },
-      { threshold: 0.1 },
+      { threshold: 0.01 },
     ).observe(container);
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) rays?.pause();
+      else if (visible) show();
+    });
   }
 </script>

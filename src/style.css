@@ -200,7 +200,7 @@ body {
 }
 
 /* ---- Hero light rays (SideRays.astro) ----
-   A negative z-index keeps them under all in-flow content. The mask fades
+   A negative z-index keeps them under all in-flow content. The shader fades
    them out before they reach the body text. */
 
 .hero-rays {
@@ -212,19 +212,12 @@ body {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  mask-image: linear-gradient(to bottom, #000 50%, transparent 92%);
 }
 
 /* On phones a shorter band keeps the rays above the first paragraphs. */
 @media (max-width: 40rem) {
   .hero-rays {
     height: 32rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-rays {
-    display: none;
   }
 }
 
